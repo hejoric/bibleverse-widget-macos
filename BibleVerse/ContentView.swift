@@ -3,7 +3,6 @@ import SwiftUI
 struct ContentView: View {
     @State private var verse = DailyVerse.placeholder
     @State private var isLoading = true
-    @State private var appearance = WidgetSettings.appearance
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -34,21 +33,21 @@ struct ContentView: View {
 
             Divider()
 
-            VStack(alignment: .leading, spacing: 10) {
+            VStack(alignment: .leading, spacing: 8) {
                 Text("Widget appearance")
                     .font(.subheadline.weight(.semibold))
 
-                Picker("Appearance", selection: $appearance) {
-                    ForEach(WidgetAppearanceStyle.allCases) { style in
-                        Text(style.displayName).tag(style)
+                ForEach(WidgetAppearanceStyle.allCases) { style in
+                    VStack(alignment: .leading, spacing: 1) {
+                        Text(style.displayName)
+                            .font(.caption.weight(.medium))
+                        Text(style.subtitle)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
                     }
                 }
-                .pickerStyle(.segmented)
-                .onChange(of: appearance) { _, newValue in
-                    WidgetSettings.appearance = newValue
-                }
 
-                Text(appearance.subtitle)
+                Text("Right-click the widget → Edit “Daily Verse” to choose a style.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }

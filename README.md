@@ -12,17 +12,18 @@ A small macOS desktop widget that shows the **YouVersion Verse of the Day**, siz
 
 ## Requirements
 
-- macOS 15.0 or later (Liquid Glass accents on macOS 26 Tahoe)
-- Xcode 16+ (Xcode 26 recommended)
+- macOS 15.0 or later (Liquid Glass accents on macOS 26 Tahoe and later, tested on macOS 27)
+- Xcode 16+ (Xcode 27 recommended)
+- No Apple Developer account needed
 
 ## Setup
 
 1. Open `BibleVerse.xcodeproj` in Xcode.
-2. Select the **BibleVerse** target → **Signing & Capabilities** → set your **Team**.
-3. Repeat for the **DailyVerseWidget** extension target.
-4. Build and run (`⌘R`). The host app previews today’s verse and embeds the widget extension.
-5. In the app, use **Widget appearance** to switch between Liquid Glass, Frosted, and Fully Clear.
-6. Enable **App Groups** on both targets if Xcode prompts you (group: `group.com.hejoric.BibleVerse`).
+2. Build and run (`⌘R`). The host app previews today’s verse and embeds the widget extension.
+
+Both targets use **Sign to Run Locally**, so there is no Team to pick and no provisioning profile.
+That is deliberate: a free Personal Team profile expires after 7 days, and once it does macOS refuses to launch the app or the widget (see [Troubleshooting](#troubleshooting)).
+If you have a paid Developer Program membership and want to distribute the app, set your Team under **Signing & Capabilities** on both targets.
 
 ### Optional: YouVersion Platform API
 
@@ -42,7 +43,7 @@ By default the widget uses bible.com’s public page data (no API key). For the 
    - **Frosted** — light blur, readable on busy wallpapers
    - **Fully Clear** — maximum transparency
 
-**Easier:** open the **BibleVerse** app and use the **Widget appearance** segmented control — changes apply immediately to your desktop widget.
+To change it later, right-click the widget → **Edit “Daily Verse”**. Each widget instance keeps its own appearance.
 
 ## Is this a “real” app?
 
@@ -88,6 +89,13 @@ DailyVerseWidget/        WidgetKit extension
 Shared/                  Verse fetcher + models
 Config/Secrets.xcconfig  Optional YouVersion API key
 ```
+
+## Troubleshooting
+
+### The app or widget won't open (“The application cannot be opened”, blank widget)
+
+Older builds of this project were signed with a free Personal Team. Those builds embed a provisioning profile that expires after 7 days, and macOS then kills the app at launch (`Launchd job spawn failed`) and fails to load the widget.
+Pull the latest code and rebuild with `⌘R`. Current builds are signed to run locally, so they don't expire.
 
 ## How refresh works
 

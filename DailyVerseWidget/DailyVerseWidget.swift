@@ -5,7 +5,7 @@ struct DailyVerseWidget: Widget {
     let kind = "DailyVerseWidget"
 
     var body: some WidgetConfiguration {
-        StaticConfiguration(kind: kind, provider: VerseProvider()) { entry in
+        AppIntentConfiguration(kind: kind, intent: AppearanceIntent.self, provider: VerseProvider()) { entry in
             DailyVerseWidgetEntryView(entry: entry)
         }
         .configurationDisplayName("Daily Verse")

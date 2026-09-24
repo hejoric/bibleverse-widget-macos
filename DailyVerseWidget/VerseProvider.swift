@@ -8,37 +8,32 @@ struct VerseEntry: TimelineEntry {
     let isPlaceholder: Bool
 }
 
-struct VerseProvider: TimelineProvider {
+struct VerseProvider: AppIntentTimelineProvider {
     func placeholder(in context: Context) -> VerseEntry {
         VerseEntry(date: .now, verse: .placeholder, style: .liquid, isPlaceholder: true)
     }
 
-    func getSnapshot(in context: Context, completion: @escaping (VerseEntry) -> Void) {
+    func snapshot(for configuration: AppearanceIntent, in context: Context) async -> VerseEntry {
         if context.isPreview {
-            completion(placeholder(in: context))
-            return
+            return VerseEntry(date: .now, verse: .placeholder, style: configuration.style, isPlaceholder: true)
         }
 
-        Task {
-            let verse = await VerseFetcher.fetchDailyVerse()
-            completion(makeEntry(verse: verse))
-        }
+        let verse = await VerseFetcher.fetchDailyVerse()
+        return makeEntry(verse: verse, style: configuration.style)
     }
 
-    func getTimeline(in context: Context, completion: @escaping (Timeline<VerseEntry>) -> Void) {
-        Task {
-            let verse = await VerseFetcher.fetchDailyVerse()
-            let entry = makeEntry(verse: verse)
-            let refreshDate = nextMidnight(after: .now)
-            completion(Timeline(entries: [entry], policy: .after(refreshDate)))
-        }
+    func timeline(for configuration: AppearanceIntent, in context: Context) async -> Timeline<VerseEntry> {
+        let verse = await VerseFetcher.fetchDailyVerse()
+        let entry = makeEntry(verse: verse, style: configuration.style)
+        let refreshDate = nextMidnight(after: .now)
+        return Timeline(entries: [entry], policy: .after(refreshDate))
     }
 
-    private func makeEntry(verse: DailyVerse) -> VerseEntry {
+    private func makeEntry(verse: DailyVerse, style: WidgetAppearanceStyle) -> VerseEntry {
         VerseEntry(
             date: .now,
             verse: verse,
-            style: WidgetSettings.appearance,
+            style: style,
             isPlaceholder: false
         )
     }

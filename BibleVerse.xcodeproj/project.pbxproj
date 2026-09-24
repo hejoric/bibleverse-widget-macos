@@ -16,11 +16,10 @@
 		AA0000010000000000000007 /* DailyVerseWidgetEntryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001010000000000000007 /* DailyVerseWidgetEntryView.swift */; };
 		AA0000010000000000000008 /* VerseProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001010000000000000008 /* VerseProvider.swift */; };
 		AA000001000000000000000E /* WidgetAppearanceStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000101000000000000000F /* WidgetAppearanceStyle.swift */; };
-		AA000001000000000000000F /* WidgetSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001010000000000000010 /* WidgetSettings.swift */; };
 		AA0000010000000000000009 /* VerseModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001010000000000000003 /* VerseModels.swift */; };
 		AA000001000000000000000A /* VerseFetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001010000000000000004 /* VerseFetcher.swift */; };
 		AA0000010000000000000010 /* WidgetAppearanceStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000101000000000000000F /* WidgetAppearanceStyle.swift */; };
-		AA0000010000000000000011 /* WidgetSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001010000000000000010 /* WidgetSettings.swift */; };
+		AA0000010000000000000011 /* AppearanceIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001010000000000000010 /* AppearanceIntent.swift */; };
 		AA000001000000000000000B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AA0001010000000000000009 /* Assets.xcassets */; };
 		AA000001000000000000000C /* DailyVerseWidget.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = AA0002010000000000000002 /* DailyVerseWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
@@ -58,12 +57,12 @@
 		AA0001010000000000000006 /* DailyVerseWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyVerseWidget.swift; sourceTree = "<group>"; };
 		AA0001010000000000000007 /* DailyVerseWidgetEntryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyVerseWidgetEntryView.swift; sourceTree = "<group>"; };
 		AA0001010000000000000008 /* VerseProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VerseProvider.swift; sourceTree = "<group>"; };
+		AA0001010000000000000010 /* AppearanceIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppearanceIntent.swift; sourceTree = "<group>"; };
 		AA0001010000000000000009 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		AA000101000000000000000A /* BibleVerse.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = BibleVerse.entitlements; sourceTree = "<group>"; };
 		AA000101000000000000000B /* DailyVerseWidget.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = DailyVerseWidget.entitlements; sourceTree = "<group>"; };
 		AA000101000000000000000C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		AA000101000000000000000F /* WidgetAppearanceStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetAppearanceStyle.swift; sourceTree = "<group>"; };
-		AA0001010000000000000010 /* WidgetSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetSettings.swift; sourceTree = "<group>"; };
 		AA000101000000000000000D /* Secrets.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Secrets.xcconfig; sourceTree = "<group>"; };
 		AA0002010000000000000001 /* BibleVerse.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BibleVerse.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AA0002010000000000000002 /* DailyVerseWidget.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = DailyVerseWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -115,6 +114,7 @@
 				AA0001010000000000000006 /* DailyVerseWidget.swift */,
 				AA0001010000000000000007 /* DailyVerseWidgetEntryView.swift */,
 				AA0001010000000000000008 /* VerseProvider.swift */,
+				AA0001010000000000000010 /* AppearanceIntent.swift */,
 				AA0001010000000000000009 /* Assets.xcassets */,
 				AA000101000000000000000B /* DailyVerseWidget.entitlements */,
 				AA000101000000000000000C /* Info.plist */,
@@ -128,7 +128,6 @@
 				AA0001010000000000000003 /* VerseModels.swift */,
 				AA0001010000000000000004 /* VerseFetcher.swift */,
 				AA000101000000000000000F /* WidgetAppearanceStyle.swift */,
-				AA0001010000000000000010 /* WidgetSettings.swift */,
 			);
 			path = Shared;
 			sourceTree = "<group>";
@@ -255,7 +254,6 @@
 				AA0000010000000000000003 /* VerseModels.swift in Sources */,
 				AA0000010000000000000004 /* VerseFetcher.swift in Sources */,
 				AA000001000000000000000E /* WidgetAppearanceStyle.swift in Sources */,
-				AA000001000000000000000F /* WidgetSettings.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -266,10 +264,10 @@
 				AA0000010000000000000006 /* DailyVerseWidget.swift in Sources */,
 				AA0000010000000000000007 /* DailyVerseWidgetEntryView.swift in Sources */,
 				AA0000010000000000000008 /* VerseProvider.swift in Sources */,
+				AA0000010000000000000011 /* AppearanceIntent.swift in Sources */,
 				AA0000010000000000000009 /* VerseModels.swift in Sources */,
 				AA000001000000000000000A /* VerseFetcher.swift in Sources */,
 				AA0000010000000000000010 /* WidgetAppearanceStyle.swift in Sources */,
-				AA0000010000000000000011 /* WidgetSettings.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -314,7 +312,7 @@
 				COPY_PHASE_STRIP = NO;
 				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
-				DEVELOPMENT_TEAM = S9632LBPJR;
+				CODE_SIGN_IDENTITY = "-";
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -370,7 +368,7 @@
 				COPY_PHASE_STRIP = NO;
 				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = S9632LBPJR;
+				CODE_SIGN_IDENTITY = "-";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
