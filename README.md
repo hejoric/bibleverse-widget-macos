@@ -4,7 +4,7 @@ A small macOS desktop widget that shows the **YouVersion Verse of the Day**, siz
 
 ## Features
 
-- **YouVersion daily verse** — fetched from [bible.com/verse-of-the-day](https://www.bible.com/verse-of-the-day) (same content as the YouVersion app)
+- **YouVersion daily verse**: the same verse as [bible.com/verse-of-the-day](https://www.bible.com/verse-of-the-day) and the YouVersion app, fetched from YouVersion's public API
 - **Daily auto-refresh** — timeline reloads shortly after midnight
 - **Liquid Glass** — uses `containerBackground`, `widgetRenderingMode`, and `widgetAccentable()` so the widget adapts to clear/tinted desktop appearances
 - **Three appearance styles** — configurable per widget (Liquid Glass, Frosted, Fully Clear)
@@ -27,7 +27,7 @@ If you have a paid Developer Program membership and want to distribute the app, 
 
 ### Optional: YouVersion Platform API
 
-By default the widget uses bible.com’s public page data (no API key). For the official REST API:
+By default the widget uses YouVersion's public API behind bible.com (no API key). For the official REST API:
 
 1. Register at [platform.youversion.com](https://platform.youversion.com) and create an app key.
 2. Copy `Config/Secrets.xcconfig.example` to `Config/Secrets.xcconfig` (already present).
@@ -99,7 +99,7 @@ Pull the latest code and rebuild with `⌘R`. Current builds are signed to run l
 
 ## How refresh works
 
-`VerseProvider` fetches the verse when the timeline is requested, then schedules the next reload at **12:05 AM** local time so bible.com has updated for the new day.
+`VerseProvider` fetches the verse when the timeline is requested, then schedules the next reload at **12:05 AM** local time so YouVersion has rolled over to the new day.
 
 ## License
 

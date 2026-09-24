@@ -1,7 +1,13 @@
 import Foundation
+import OSLog
 
 enum VerseFetcher {
-    private static let bibleComURL = URL(string: "https://www.bible.com/verse-of-the-day")!
+    private static let logger = Logger(subsystem: "com.hejoric.BibleVerse", category: "VerseFetcher")
+
+    /// Keyless YouVersion backend used by bible.com. The bible.com pages themselves now sit
+    /// behind a JavaScript bot challenge, so they can't be scraped from a widget.
+    private static let youVersionPublicBase = URL(string: "https://nodejs.bible.com/api")!
+    private static let versionID = 59 // ESV, the default for the YouVersion daily verse
     private static let youVersionBase = URL(string: "https://api.youversion.com/v1")!
 
   #if WIDGET_EXTENSION
@@ -12,15 +18,24 @@ enum VerseFetcher {
 
     static func fetchDailyVerse() async -> DailyVerse {
         if let key = appKey, !key.isEmpty, key != "YOUR_YVP_APP_KEY" {
-            if let verse = try? await fetchFromYouVersionAPI(appKey: key) {
+            do {
+                let verse = try await fetchFromYouVersionAPI(appKey: key)
+                logger.info("Fetched \(verse.reference, privacy: .public) from YouVersion Platform API")
                 return verse
+            } catch {
+                logger.error("YouVersion Platform API failed: \(error, privacy: .public)")
             }
         }
 
-        if let verse = try? await fetchFromBibleCom() {
+        do {
+            let verse = try await fetchFromYouVersionPublicAPI()
+            logger.info("Fetched \(verse.reference, privacy: .public) from YouVersion public API")
             return verse
+        } catch {
+            logger.error("YouVersion public API failed: \(error, privacy: .public)")
         }
 
+        logger.error("All verse sources failed, showing placeholder")
         return .placeholder
     }
 
@@ -67,48 +82,61 @@ enum VerseFetcher {
         )
     }
 
-    // MARK: - bible.com (YouVersion daily verse, no API key required)
+    // MARK: - YouVersion public API (same daily verse as bible.com, no API key required)
 
-    private static func fetchFromBibleCom() async throws -> DailyVerse {
-        var request = URLRequest(url: bibleComURL)
-        request.setValue(
-            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15",
-            forHTTPHeaderField: "User-Agent"
-        )
+    private static func fetchFromYouVersionPublicAPI() async throws -> DailyVerse {
+        let dayOfYear = Calendar.current.ordinality(of: .day, in: .year, for: .now) ?? 1
 
-        let (data, response) = try await URLSession.shared.data(for: request)
-        guard let http = response as? HTTPURLResponse, (200...299).contains(http.statusCode),
-              let html = String(data: data, encoding: .utf8),
-              let jsonData = extractNextDataJSON(from: html) else {
+        var votdURL = youVersionPublicBase.appending(path: "moments/votd/3.1")
+        votdURL.append(queryItems: [URLQueryItem(name: "version_id", value: String(versionID))])
+        let calendar: PublicVOTDCalendar = try await fetchJSON(from: votdURL)
+        guard let usfms = calendar.votd.first(where: { $0.day == dayOfYear })?.usfm, !usfms.isEmpty else {
             throw VerseFetchError.invalidResponse
         }
 
-        let page = try JSONDecoder().decode(BibleComNextData.self, from: jsonData)
-        guard let verse = page.props.pageProps.verses.first else {
+        var versesURL = youVersionPublicBase.appending(path: "bible/verses/3.1")
+        versesURL.append(queryItems: [
+            URLQueryItem(name: "id", value: String(versionID)),
+            URLQueryItem(name: "format", value: "text"),
+        ] + usfms.enumerated().map { index, usfm in
+            URLQueryItem(name: "references[\(index)]", value: usfm)
+        })
+        let passage: PublicVersesResponse = try await fetchJSON(from: versesURL)
+        guard let first = passage.verses.first, let last = passage.verses.last else {
             throw VerseFetchError.invalidResponse
         }
 
-        let reference = verse.reference.human
-        let text = verse.content.trimmingCharacters(in: .whitespacesAndNewlines)
-        let translation = page.props.pageProps.versionData?.abbreviation ?? "ESV"
-        let usfm = verse.reference.usfm.first ?? "JHN.3.16"
+        let text = passage.verses
+            .map(\.content)
+            .joined(separator: " ")
+            .split(whereSeparator: \.isWhitespace)
+            .joined(separator: " ")
 
         return DailyVerse(
-            reference: reference,
+            reference: combinedReference(first: first.reference.human, last: last.reference.human),
             text: text,
-            translation: translation,
-            usfm: usfm,
-            versionID: 59,
+            translation: passage.localAbbreviation ?? "ESV",
+            usfm: usfms[0],
+            versionID: versionID,
             fetchedAt: .now
         )
     }
 
-    private static func extractNextDataJSON(from html: String) -> Data? {
-        let openTag = #"<script id="__NEXT_DATA__" type="application/json">"#
-        guard let start = html.range(of: openTag) else { return nil }
-        let jsonStart = start.upperBound
-        guard let end = html.range(of: "</script>", range: jsonStart..<html.endIndex) else { return nil }
-        return String(html[jsonStart..<end.lowerBound]).data(using: .utf8)
+    private static func fetchJSON<T: Decodable>(from url: URL) async throws -> T {
+        let (data, response) = try await URLSession.shared.data(from: url)
+        guard let http = response as? HTTPURLResponse, (200...299).contains(http.statusCode) else {
+            throw VerseFetchError.invalidResponse
+        }
+        return try JSONDecoder().decode(T.self, from: data)
+    }
+
+    /// "Isaiah 43:18" + "Isaiah 43:19" → "Isaiah 43:18-19".
+    private static func combinedReference(first: String, last: String) -> String {
+        guard first != last else { return first }
+        if let colon = first.lastIndex(of: ":"), last.hasPrefix(first[...colon]) {
+            return first + "-" + last.dropFirst(first[...colon].count)
+        }
+        return "\(first)-\(last)"
     }
 }
 
@@ -140,31 +168,32 @@ private struct YouVersionVersion: Decodable {
     let abbreviation: String?
 }
 
-// MARK: - bible.com __NEXT_DATA__ models
+// MARK: - YouVersion public API models
 
-private struct BibleComNextData: Decodable {
-    let props: BibleComProps
+private struct PublicVOTDCalendar: Decodable {
+    let votd: [PublicVOTDDay]
 }
 
-private struct BibleComProps: Decodable {
-    let pageProps: BibleComPageProps
-}
-
-private struct BibleComPageProps: Decodable {
-    let verses: [BibleComVerse]
-    let versionData: BibleComVersionData?
-}
-
-private struct BibleComVerse: Decodable {
-    let reference: BibleComReference
-    let content: String
-}
-
-private struct BibleComReference: Decodable {
-    let human: String
+private struct PublicVOTDDay: Decodable {
+    let day: Int
     let usfm: [String]
 }
 
-private struct BibleComVersionData: Decodable {
-    let abbreviation: String?
+private struct PublicVersesResponse: Decodable {
+    let verses: [PublicVerse]
+    let localAbbreviation: String?
+
+    enum CodingKeys: String, CodingKey {
+        case verses
+        case localAbbreviation = "local_abbreviation"
+    }
+}
+
+private struct PublicVerse: Decodable {
+    let reference: PublicVerseReference
+    let content: String
+}
+
+private struct PublicVerseReference: Decodable {
+    let human: String
 }
